@@ -38,23 +38,25 @@ private function Boot()
             wscript.stdout.write("(y / n / q): ")
 
             line = trim(wscript.stdin.readline)
-
-            if line = "y" then
-                ImportInitScript()
-                Main()
-            elseif line = "n" then
-                Main()
-            elseif line = "q" then
-                Print("Bai :]")
-                wscript.quit(0)
-            else
-                LogError("Invalid input... Try again!")
-            end if
+			
+			select case line
+				case "y"
+					ImportInitScript()
+					Main()
+				case "n"
+					Main()
+				case "q" 
+                Print("Bye :]")
+					wscript.quit(0)
+				case else
+					LogError("Invalid input... Try again!")
+				end select
         else
             Main()
         end if
     end if
-end function
+end function 'private function Boot()
+
 
 
 private function ImportInitScript()
@@ -90,41 +92,49 @@ private function Main()
             line = rtrim(left(line, len(line)-1)) & " " & trim(wscript.stdin.readline)
         loop
 
-        if lcase(line) = "?exit" then
-            exit do
-        end if
-
-        if line = "?" then
-            PrintHelp()
-        elseif StartsWith(line, "?import ") = True then
-            file = Replace(line, "?import ", "")
-            Import(file)
-        elseif StartsWith(line, "?version") = True then
-            Print(version)
-        elseif StartsWith(line, "?reimport") = True then
-            ImportInitScript()
-        else
-            on error resume next
-            Err.clear
-            Execute(line)
-            if Err.Number <> 0 then
-                fedcba = trim(Err.Description & " (0x" & hex(Err.Number) & ")")
-
-                if Err.Number = 13 then
-                    abcdef = "if VarType(" & line & ") = 0 then" & VbCrLf & _
-                             "     wscript.echo " & quotes("Object not initilized") & VbCrLf & _
-                             "else" & VbCrLf & _
-                             "     wscript.echo CStr(" & line & ")" & VbCrLf & _
-                             "end if" & VbCrLf
-                    ExecuteCode(abcdef)
-                else
-                    wscript.echo "Compile-Error: " + Err.Description
-                end if
-            end if
-            on error goto 0
-        end if
+        select case StartsWith(line)
+			case "?exit" , "?q" , "?quit"
+				exit do
+			case "?"
+				PrintHelp()
+			case "?import "
+				file = Replace(line, "?import ", "")
+				Import(file)
+			case "?version"
+				Print(version)
+			case "?reimport"
+				ImportInitScript()
+			case "?config"
+				PrintHelpConfig()
+			case "?run"
+				PrintHelpRun()	
+			case "?ext"
+				PrintHelpExtractions()
+			case "?ini"
+				showIniValues()
+			case "sei"
+				sei(line)
+			case else
+				on error resume next
+				Err.clear
+				Execute(line)
+				if Err.Number <> 0 then
+				fedcba = trim(Err.Description & " (0x" & hex(Err.Number) & ")")
+					if Err.Number = 13 then
+						abcdef = "if VarType(" & line & ") = 0 then" & VbCrLf & _
+							 "     wscript.echo " & quotes("Object not initilized") & VbCrLf & _
+							 "else" & VbCrLf & _
+							 "     wscript.echo CStr(" & line & ")" & VbCrLf & _
+							 "end if" & VbCrLf
+						ExecuteCode(abcdef)
+					else
+						wscript.echo "Compile-Error: " + Err.Description
+					end if
+				end if
+				on error goto 0
+	end select
     loop
-end function
+end function 'private function Main()
 
 
 private function ExecuteCode(ByRef s)
@@ -212,114 +222,87 @@ end function
 
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-' Input argument parting
-
+' Input argument parsing
 private function ParseInputArgs()
-    LogDebug("ParseInputArgs()")
+LogDebug("ParseInputArgs()")
 
     ' Parse all input arguments and set variables
     for i = 0 to wscript.Arguments.count - 1
-        a = wscript.arguments.Item(i)
-        if a = "--help" then
-            ' Using docopt cli specs "https://github.com/docopt/docopt"
-            Print("Usage:")
-            Print(" vbsh.wsf [-v ... ] [--help]")
-            Print(" vbsh.wsf --version")
-            Print(" ")
-            Print("Options:")
-            Print(" --help      Prints this help")
-            Print(" -v ...      Sets the logging level of this run. [Default: -vvvv --> INFO logging] [Supports level 1-5]")
-            Print(" --version   Prints the version of the application")
-            Print("")
-            wscript.quit(0)
-        elseif a = "--version" then
-            wscript.echo version
-            wscript.quit(0)
-        elseif a = "-v" then
-            ' Critical log level
-            LogLevel = 1
-        elseif a = "-vv" then
-            ' Error log level
-            LogLevel = 2
-        elseif a = "-vvv" then
-            ' Warning log level
-            LogLevel = 3
-        elseif a = "-vvvv" then
-            ' Info log level
-            LogLevel = 4
-        elseif a = "-vvvvv" then
-            ' Debug log level
-            LogLevel = 5
-        else
-            wscript.echo "ERROR: Unknown input argument: " + a
-            wscript.quit(0)
-        end if
+        select case wscript.arguments.Item(i)
+			case "--help"
+				' Using docopt cli specs "https://github.com/docopt/docopt"
+				Print("Usage:")
+				Print(" vbsh.wsf [-v ... ] [--help]")
+				Print(" vbsh.wsf --version")
+				Print(" ")
+				Print("Options:")
+				Print(" --help      Prints this help")
+				Print(" -v ...      Sets the logging level of this run. [Default: -vvvv --> INFO logging] [Supports level 1-5]")
+				Print(" --version   Prints the version of the application")
+				Print("")
+				wscript.quit(0)
+			case "--version" 
+				wscript.echo version
+				wscript.quit(0)
+			case "-v"
+				' Critical log level
+				LogLevel = 1
+			case "-vv"
+				' Error log level
+				LogLevel = 2
+			case "-vvv"
+				' Warning log level
+				LogLevel = 3
+			case "-vvvv"
+				' Info log level
+				LogLevel = 4
+			case "-vvvvv"
+				' Debug log level
+				LogLevel = 5
+			case else
+				wscript.echo "ERROR: Unknown input argument: " + a
+				wscript.quit(0)
+        end select
     next
-end function
+end function 'private function ParseInputArgs()
 
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' Logging functions'
 
 private function LogDebug(msg)
-    if LogLevel >= 5 then
-        if LogPrefix = True then
-            print("DEBUG: " & cstr(msg))
-        else
-            print(cstr(msg))
-        end if
-    end if
+    LogInternal 5, "DEBUG: ", msg
 end function
-
 
 private function LogInfo(msg)
-    if LogLevel >= 4 then
-        if LogPrefix = True then
-            print("INFO: " & cstr(msg))
-        else
-            print(cstr(msg))
-        end if
-    end if
+    LogInternal 4, "INFO: ", msg
 end function
-
 
 private function LogWarning(msg)
-    if LogLevel >= 3 then
-        if LogPrefix = True then
-            print("WARNING: " & cstr(msg))
-        else
-            print(cstr(msg))
-        end if
-    end if
+    LogInternal 3, "WARNING: ", msg
 end function
-
 
 private function LogError(msg)
-    if LogLevel >= 2 then
-        if LogPrefix = True then
-            print("ERROR: " & cstr(msg))
-        else
-            print(cstr(msg))
-        end if
-    end if
+    	LogInternal 2, "ERROR: ", msg
 end function
-
 
 private function LogCritical(msg)
-    if LogLevel >= 1 then
-        if LogPrefix = True then
-            print("CRITICAL: " & cstr(msg))
+	LogInternal 1, "CRITICAL: ", msg
+end function
+
+private function LogInternal(preLogLevel, preString, msg)
+    if LogLevel >= preLogLevel then
+	if LogPrefix = True then
+            print(preString & cstr(msg))
         else
             print(cstr(msg))
         end if
     end if
 end function
-
 
 private function print(msg)
     wscript.echo msg
 end function
-
 
 private function p(msg)
     wscript.echo msg
