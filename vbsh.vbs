@@ -3,7 +3,7 @@
 '
 ' A simple interactive VBScript shell.
 
-version = "0.1"
+version = "0.11"
 
 ' Add all scripts you want to import at startup
 scripts = array()
@@ -27,30 +27,30 @@ private function Boot()
         ImportInitScript()
         Main()
     else
-        if ubound(scripts) >= 0 then
-            ' Only prompt user input if there is any predefined scripts
-            LogInfo("Do you want to import the predefined scripts? (In this order)" & VbCrLf & "")
-            for each script in scripts
-                LogInfo(" * " + script)
-            next
+	if ubound(scripts) >= 0 then
+		' Only prompt user input if there is any predefined scripts
+		LogInfo("Do you want to import the predefined scripts? (In this order)" & VbCrLf & "")
+		for each script in scripts
+		LogInfo(" * " + script)
+		next
 
-            wscript.echo ""
-            wscript.stdout.write("(y / n / q): ")
+		wscript.echo ""
+		wscript.stdout.write("(y / n / q): ")
 
-            line = trim(wscript.stdin.readline)
-			
-			select case line
-				case "y"
-					ImportInitScript()
-					Main()
-				case "n"
-					Main()
-				case "q" 
-                Print("Bye :]")
-					wscript.quit(0)
-				case else
-					LogError("Invalid input... Try again!")
-				end select
+		line = trim(wscript.stdin.readline)
+
+		select case line
+			case "y"
+				ImportInitScript()
+				Main()
+			case "n"
+				Main()
+			case "q" 
+				Print("Bye :]")
+				wscript.quit(0)
+			case else
+				LogError("Invalid input... Try again!")
+		end select
         else
             Main()
         end if
@@ -93,45 +93,45 @@ private function Main()
         loop
 
         select case StartsWith(line)
-			case "?exit" , "?q" , "?quit"
-				exit do
-			case "?"
-				PrintHelp()
-			case "?import "
-				file = Replace(line, "?import ", "")
-				Import(file)
-			case "?version"
-				Print(version)
-			case "?reimport"
-				ImportInitScript()
-			case "?config"
-				PrintHelpConfig()
-			case "?run"
-				PrintHelpRun()	
-			case "?ext"
-				PrintHelpExtractions()
-			case "?ini"
-				showIniValues()
-			case "sei"
-				sei(line)
-			case else
-				on error resume next
-				Err.clear
-				Execute(line)
-				if Err.Number <> 0 then
-				fedcba = trim(Err.Description & " (0x" & hex(Err.Number) & ")")
-					if Err.Number = 13 then
-						abcdef = "if VarType(" & line & ") = 0 then" & VbCrLf & _
-							 "     wscript.echo " & quotes("Object not initilized") & VbCrLf & _
-							 "else" & VbCrLf & _
-							 "     wscript.echo CStr(" & line & ")" & VbCrLf & _
-							 "end if" & VbCrLf
-						ExecuteCode(abcdef)
-					else
-						wscript.echo "Compile-Error: " + Err.Description
-					end if
+		case "?exit" , "?q" , "?quit"
+			exit do
+		case "?"
+			PrintHelp()
+		case "?import "
+			file = Replace(line, "?import ", "")
+			Import(file)
+		case "?version"
+			Print(version)
+		case "?reimport"
+			ImportInitScript()
+		case "?config"
+			PrintHelpConfig()
+		case "?run"
+			PrintHelpRun()	
+		case "?ext"
+			PrintHelpExtractions()
+		case "?ini"
+			showIniValues()
+		case "sei"
+			sei(line)
+		case else
+			on error resume next
+			Err.clear
+			Execute(line)
+			if Err.Number <> 0 then
+			fedcba = trim(Err.Description & " (0x" & hex(Err.Number) & ")")
+				if Err.Number = 13 then
+					abcdef = "if VarType(" & line & ") = 0 then" & VbCrLf & _
+						 "     wscript.echo " & quotes("Object not initilized") & VbCrLf & _
+						 "else" & VbCrLf & _
+						 "     wscript.echo CStr(" & line & ")" & VbCrLf & _
+						 "end if" & VbCrLf
+					ExecuteCode(abcdef)
+				else
+					wscript.echo "Compile-Error: " + Err.Description
 				end if
-				on error goto 0
+			end if
+			on error goto 0
 	end select
     loop
 end function 'private function Main()
